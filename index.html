@@ -1,0 +1,794 @@
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ProCalc - Kalkulador Profisionál</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --background: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --operator: #eef2ff;
+            --danger: #fee2e2;
+        }
+
+        body.dark {
+            --background: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+            --operator: #312e81;
+            --danger: #7f1d1d;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--background);
+            color: var(--text);
+            transition: 0.3s;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 7%;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .logo span {
+            color: var(--text);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status {
+            color: #16a34a;
+            font-size: 13px;
+        }
+
+        .theme-btn {
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            padding: 9px 13px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .heading {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .heading h1 {
+            font-size: clamp(26px, 4vw, 36px);
+            margin-bottom: 10px;
+        }
+
+        .heading p {
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+            gap: 25px;
+            align-items: start;
+            justify-content: center;
+        }
+
+        .calculator,
+        .history-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.07);
+        }
+
+        .calculator {
+            padding: 22px;
+        }
+
+        .display {
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 135px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            text-align: right;
+            overflow: hidden;
+        }
+
+        .previous {
+            color: var(--muted);
+            min-height: 24px;
+            font-size: 15px;
+            overflow-wrap: anywhere;
+        }
+
+        .current {
+            font-size: clamp(30px, 5vw, 42px);
+            font-weight: 700;
+            overflow-wrap: anywhere;
+            margin-top: 8px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 11px;
+        }
+
+        .buttons button {
+            border: none;
+            border-radius: 13px;
+            min-height: 58px;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text);
+            background: var(--background);
+            transition: transform 0.15s, filter 0.15s;
+        }
+
+        .buttons button:hover {
+            filter: brightness(0.95);
+            transform: translateY(-2px);
+        }
+
+        .buttons button:active {
+            transform: scale(0.96);
+        }
+
+        .buttons .operator {
+            background: var(--operator);
+            color: var(--primary);
+        }
+
+        .buttons .clear {
+            background: var(--danger);
+            color: #dc2626;
+        }
+
+        body.dark .buttons .clear {
+            color: #fecaca;
+        }
+
+        .buttons .equal {
+            background: var(--primary);
+            color: white;
+        }
+
+        .buttons .zero {
+            grid-column: span 2;
+        }
+
+        .history-card {
+            padding: 23px;
+            min-height: 250px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .history-header h2 {
+            font-size: 20px;
+        }
+
+        .clear-history {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 8px 11px;
+            border-radius: 9px;
+            cursor: pointer;
+        }
+
+        .history-list {
+            list-style: none;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .history-list li {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .history-expression {
+            color: var(--muted);
+            overflow-wrap: anywhere;
+        }
+
+        .history-result {
+            font-weight: 700;
+            overflow-wrap: anywhere;
+            text-align: right;
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: 35px 10px;
+            color: var(--muted);
+            line-height: 1.8;
+        }
+
+        .tip {
+            margin-top: 20px;
+            background: var(--background);
+            border-radius: 12px;
+            padding: 15px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px 15px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        @media (max-width: 760px) {
+            header {
+                padding: 16px 5%;
+            }
+
+            .status {
+                display: none;
+            }
+
+            main {
+                margin: 25px auto;
+            }
+
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .calculator {
+                padding: 16px;
+            }
+
+            .buttons {
+                gap: 8px;
+            }
+
+            .buttons button {
+                min-height: 55px;
+                font-size: 18px;
+            }
+
+            .heading {
+                margin-bottom: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">Pro<span>Calc.</span></div>
+
+    <div class="header-right">
+        <span class="status">● Sistema ativu</span>
+        <button class="theme-btn" id="themeBtn"
+                aria-label="Troka tema" title="Troka tema">
+            🌙
+        </button>
+    </div>
+</header>
+
+<main>
+    <section class="heading">
+        <h1>Kalkulador Profisionál</h1>
+        <p>Kalkula lalais, loos no fasil ho ProCalc.</p>
+    </section>
+
+    <section class="layout">
+
+        <div class="calculator">
+
+            <div class="display" aria-live="polite">
+                <div class="previous" id="previous">Prontu atu kalkula</div>
+                <div class="current" id="current">0</div>
+            </div>
+
+            <div class="buttons" id="buttons">
+
+                <button class="clear" data-action="clear">AC</button>
+                <button class="operator" data-action="backspace">⌫</button>
+                <button class="operator" data-action="percent">%</button>
+                <button class="operator" data-operator="÷">÷</button>
+
+                <button data-number="7">7</button>
+                <button data-number="8">8</button>
+                <button data-number="9">9</button>
+                <button class="operator" data-operator="×">×</button>
+
+                <button data-number="4">4</button>
+                <button data-number="5">5</button>
+                <button data-number="6">6</button>
+                <button class="operator" data-operator="−">−</button>
+
+                <button data-number="1">1</button>
+                <button data-number="2">2</button>
+                <button data-number="3">3</button>
+                <button class="operator" data-operator="+">+</button>
+
+                <button class="operator" data-action="sqrt">√</button>
+                <button data-number="0">0</button>
+                <button data-action="decimal">.</button>
+                <button class="operator" data-action="square">x²</button>
+
+                <button class="operator" data-action="sign">+/−</button>
+                <button class="equal" data-action="equals"
+                        style="grid-column: span 3;">=</button>
+
+            </div>
+
+            <div class="tip">
+                <strong>Dica:</strong><br>
+                • Uza AC atu hamoos kalkulasaun.<br>
+                • Uza ⌫ atu apaga númeru ikus.<br>
+                • Uza √ atu buka raiz kuadrada.<br>
+                • Uza x² atu hasa'e númeru ba poténsia 2.
+            </div>
+
+        </div>
+
+        <aside class="history-card">
+
+            <div class="history-header">
+                <h2>📋 Istória Kalkulasaun</h2>
+                <button class="clear-history" id="clearHistory">
+                    Hamoos
+                </button>
+            </div>
+
+            <ul class="history-list" id="historyList">
+                <li class="empty-history">
+                    Sei la iha istória.<br>
+                    Halo kalkulasaun ida atu haree rezultadu.
+                </li>
+            </ul>
+
+        </aside>
+
+    </section>
+</main>
+
+<footer>
+    © 2026 ProCalc — Kalkulador Profisionál
+</footer>
+
+<script>
+    const currentDisplay = document.getElementById("current");
+    const previousDisplay = document.getElementById("previous");
+    const buttons = document.getElementById("buttons");
+    const historyList = document.getElementById("historyList");
+
+    let currentValue = "0";
+    let firstOperand = null;
+    let operator = null;
+    let waitingForSecondOperand = false;
+    let expressionText = "";
+    let justCalculated = false;
+
+    function updateDisplay() {
+        currentDisplay.textContent = currentValue;
+        previousDisplay.textContent =
+            expressionText || "Prontu atu kalkula";
+    }
+
+    function formatNumber(number) {
+        if (!Number.isFinite(number)) {
+            return "Error";
+        }
+
+        if (Object.is(number, -0)) {
+            number = 0;
+        }
+
+        return Number(number.toPrecision(12)).toString();
+    }
+
+    function inputNumber(number) {
+        if (currentValue === "Error" || justCalculated) {
+            currentValue = number;
+            justCalculated = false;
+            firstOperand = null;
+            operator = null;
+            expressionText = "";
+            waitingForSecondOperand = false;
+            updateDisplay();
+            return;
+        }
+
+        if (waitingForSecondOperand) {
+            currentValue = number;
+            waitingForSecondOperand = false;
+        } else {
+            currentValue =
+                currentValue === "0" ? number : currentValue + number;
+        }
+
+        updateDisplay();
+    }
+
+    function inputDecimal() {
+        if (currentValue === "Error" || justCalculated) {
+            currentValue = "0.";
+            justCalculated = false;
+            firstOperand = null;
+            operator = null;
+            expressionText = "";
+            waitingForSecondOperand = false;
+            updateDisplay();
+            return;
+        }
+
+        if (waitingForSecondOperand) {
+            currentValue = "0.";
+            waitingForSecondOperand = false;
+        } else if (!currentValue.includes(".")) {
+            currentValue += ".";
+        }
+
+        updateDisplay();
+    }
+
+    function calculate(a, b, op) {
+        switch (op) {
+            case "+": return a + b;
+            case "−": return a - b;
+            case "×": return a * b;
+            case "÷": return b === 0 ? NaN : a / b;
+            default: return b;
+        }
+    }
+
+    function inputOperator(nextOperator) {
+        const inputValue = Number(currentValue);
+
+        if (!Number.isFinite(inputValue)) {
+            return;
+        }
+
+        if (operator && !waitingForSecondOperand) {
+            const result = calculate(
+                firstOperand,
+                inputValue,
+                operator
+            );
+
+            if (!Number.isFinite(result)) {
+                currentValue = "Error";
+                expressionText = "Operasaun la bele kalkula";
+                firstOperand = null;
+                operator = null;
+                waitingForSecondOperand = true;
+                justCalculated = true;
+                updateDisplay();
+                return;
+            }
+
+            currentValue = formatNumber(result);
+            firstOperand = result;
+        } else {
+            firstOperand = inputValue;
+        }
+
+        operator = nextOperator;
+        waitingForSecondOperand = true;
+        justCalculated = false;
+        expressionText = currentValue + " " + operator;
+        updateDisplay();
+    }
+
+    function addHistory(expression, result) {
+        const empty = historyList.querySelector(".empty-history");
+
+        if (empty) {
+            historyList.innerHTML = "";
+        }
+
+        const item = document.createElement("li");
+        const expressionSpan = document.createElement("span");
+        const resultSpan = document.createElement("span");
+
+        expressionSpan.className = "history-expression";
+        resultSpan.className = "history-result";
+
+        expressionSpan.textContent = expression;
+        resultSpan.textContent = "= " + result;
+
+        item.append(expressionSpan, resultSpan);
+        historyList.prepend(item);
+    }
+
+    function inputEquals() {
+        if (
+            operator === null ||
+            firstOperand === null ||
+            waitingForSecondOperand
+        ) {
+            return;
+        }
+
+        const secondOperand = Number(currentValue);
+        const expression =
+            formatNumber(firstOperand) + " " +
+            operator + " " +
+            formatNumber(secondOperand);
+
+        const result = calculate(
+            firstOperand,
+            secondOperand,
+            operator
+        );
+
+        if (!Number.isFinite(result)) {
+            currentValue = "Error";
+            expressionText = "Divizaun por zero ka rezultadu inválidu";
+        } else {
+            currentValue = formatNumber(result);
+            expressionText = expression + " =";
+            addHistory(expression, currentValue);
+        }
+
+        firstOperand = null;
+        operator = null;
+        waitingForSecondOperand = false;
+        justCalculated = true;
+
+        updateDisplay();
+    }
+
+    function clearAll() {
+        currentValue = "0";
+        firstOperand = null;
+        operator = null;
+        waitingForSecondOperand = false;
+        expressionText = "";
+        justCalculated = false;
+
+        updateDisplay();
+    }
+
+    function backspace() {
+        if (waitingForSecondOperand || justCalculated) {
+            return;
+        }
+
+        if (currentValue === "Error") {
+            clearAll();
+            return;
+        }
+
+        currentValue = currentValue.length > 1
+            ? currentValue.slice(0, -1)
+            : "0";
+
+        if (currentValue === "-") {
+            currentValue = "0";
+        }
+
+        updateDisplay();
+    }
+
+    function applyUnaryAction(action) {
+        const value = Number(currentValue);
+
+        if (!Number.isFinite(value)) {
+            return;
+        }
+
+        let result;
+        let expression;
+
+        switch (action) {
+            case "sqrt":
+                if (value < 0) {
+                    currentValue = "Error";
+                    expressionText = "La bele buka raiz ba númeru negativu";
+                    updateDisplay();
+                    return;
+                }
+
+                result = Math.sqrt(value);
+                expression = "√(" + currentValue + ")";
+                break;
+
+            case "square":
+                result = value * value;
+                expression = "(" + currentValue + ")²";
+                break;
+
+            case "sign":
+                currentValue = formatNumber(-value);
+                justCalculated = false;
+                updateDisplay();
+                return;
+
+            case "percent":
+                result = value / 100;
+                expression = currentValue + "%";
+                break;
+
+            default:
+                return;
+        }
+
+        if (!Number.isFinite(result)) {
+            currentValue = "Error";
+            expressionText = "Rezultadu boot demais";
+            updateDisplay();
+            return;
+        }
+
+        currentValue = formatNumber(result);
+        expressionText = expression + " =";
+        addHistory(expression, currentValue);
+
+        firstOperand = null;
+        operator = null;
+        waitingForSecondOperand = false;
+        justCalculated = true;
+
+        updateDisplay();
+    }
+
+    buttons.addEventListener("click", function(event) {
+        const button = event.target.closest("button");
+
+        if (!button) {
+            return;
+        }
+
+        if (button.dataset.number !== undefined) {
+            inputNumber(button.dataset.number);
+            return;
+        }
+
+        if (button.dataset.operator) {
+            inputOperator(button.dataset.operator);
+            return;
+        }
+
+        const action = button.dataset.action;
+
+        switch (action) {
+            case "clear":
+                clearAll();
+                break;
+
+            case "backspace":
+                backspace();
+                break;
+
+            case "decimal":
+                inputDecimal();
+                break;
+
+            case "equals":
+                inputEquals();
+                break;
+
+            case "sqrt":
+            case "square":
+            case "sign":
+            case "percent":
+                applyUnaryAction(action);
+                break;
+        }
+    });
+
+    document.addEventListener("keydown", function(event) {
+        const key = event.key;
+
+        if (/^[0-9]$/.test(key)) {
+            inputNumber(key);
+        } else if (key === ".") {
+            inputDecimal();
+        } else if (key === "+") {
+            inputOperator("+");
+        } else if (key === "-") {
+            inputOperator("−");
+        } else if (key === "*") {
+            inputOperator("×");
+        } else if (key === "/") {
+            event.preventDefault();
+            inputOperator("÷");
+        } else if (key === "Enter" || key === "=") {
+            event.preventDefault();
+            inputEquals();
+        } else if (key === "Backspace") {
+            backspace();
+        } else if (key === "Escape") {
+            clearAll();
+        } else if (key === "%") {
+            applyUnaryAction("percent");
+        }
+    });
+
+    document.getElementById("clearHistory").addEventListener(
+        "click",
+        function() {
+            historyList.innerHTML = "";
+
+            const empty = document.createElement("li");
+            empty.className = "empty-history";
+            empty.textContent = "Istória kalkulasaun hamoos ona.";
+
+            historyList.appendChild(empty);
+        }
+    );
+
+    document.getElementById("themeBtn").addEventListener(
+        "click",
+        function() {
+            document.body.classList.toggle("dark");
+
+            this.textContent =
+                document.body.classList.contains("dark") ? "☀️" : "🌙";
+        }
+    );
+
+    updateDisplay();
+</script>
+
+</body>
+</html>
+
